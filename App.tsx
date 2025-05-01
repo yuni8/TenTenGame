@@ -1,5 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Animated, Dimensions } from 'react-native';
+
+const TILE_SIZE = 60;
+const TILE_MARGIN = 2;
+const GRID_COLS = 4;
+const GRID_ROWS = 4;
+const GRID_WIDTH = GRID_COLS * (TILE_SIZE + TILE_MARGIN * 2);
+const GRID_HEIGHT = GRID_ROWS * (TILE_SIZE + TILE_MARGIN * 2);
 
 function App(): React.JSX.Element {
   const initialGrid: number[][] = [
@@ -13,7 +20,6 @@ function App(): React.JSX.Element {
   const [selected, setSelected] = useState<{ row: number; col: number }[]>([]);
   const [score, setScore] = useState<number>(0);
 
-  // 각 타일마다 애니메이션 값 (opacity)
   const animations = useRef<Animated.Value[][]>(
     initialGrid.map(row => row.map(() => new Animated.Value(1)))
   ).current;
@@ -31,7 +37,6 @@ function App(): React.JSX.Element {
           writeRow--;
         }
       }
-      // 남은 위쪽은 랜덤 숫자 채우기
       for (let r = writeRow; r >= 0; r--) {
         newGrid[r][col] = Math.ceil(Math.random() * 9);
       }
@@ -67,10 +72,10 @@ function App(): React.JSX.Element {
       });
 
       Promise.all(animationsDone).then(() => {
-        const newGrid = grid.map(row => [...row]); // ✅ 깊은 복사
+        const newGrid = grid.map(row => [...row]); // 깊은 복사
         newSelected.forEach(pos => {
           newGrid[pos.row][pos.col] = 0;
-          animations[pos.row][pos.col].setValue(1); // 애니메이션 값 리셋
+          animations[pos.row][pos.col].setValue(1);
         });
 
         const droppedGrid = dropTiles(newGrid);
@@ -130,9 +135,26 @@ const styles = StyleSheet.create({
   scoreBoard: { flexDirection: 'row', justifyContent: 'space-between', width: '80%', marginBottom: 20 },
   score: { color: '#fff', fontSize: 16 },
   best: { color: '#fff', fontSize: 16 },
-  grid: { backgroundColor: '#444', padding: 4 },
-  row: { flexDirection: 'row' },
-  tile: { width: 60, height: 60, backgroundColor: '#eee', margin: 2, justifyContent: 'center', alignItems: 'center', borderRadius: 5 },
+  grid: {
+    width: GRID_WIDTH,
+    height: GRID_HEIGHT,
+    backgroundColor: '#333',
+    padding: 0,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  tile: {
+    width: TILE_SIZE,
+    height: TILE_SIZE,
+    backgroundColor: '#eee',
+    margin: TILE_MARGIN,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
   tileText: { fontSize: 20, fontWeight: 'bold' },
   playButton: { marginTop: 20, backgroundColor: '#ff9900', padding: 15, borderRadius: 10 },
   playText: { color: '#fff', fontSize: 18 }
